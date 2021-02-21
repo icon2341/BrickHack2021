@@ -6,10 +6,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
 
-public class JSONHandler  {
+public class JSONHandler {
 
-    public JSONObject getJSONObject(int sku) {
+    public JSONObject getProductFromSku(int sku) {
         JSONObject jsonObject = null;
         try {
             URL url = new URL("https://api.wegmans.io/products/" + sku + "?api-version=2018-10-18");
@@ -35,7 +36,8 @@ public class JSONHandler  {
         return jsonObject;
     }
 
-    public void searchProduct(String query) {
+    public HashMap<String, Integer> searchProduct(String query) {
+        HashMap<String, Integer> results = null;
         try {
             URL url = new URL("https://api.wegmans.io/products/search?query=" + query + "&results=100&page=1&api-version=2018-10-18");
             HttpURLConnection huc = (HttpURLConnection) url.openConnection();
@@ -43,6 +45,7 @@ public class JSONHandler  {
             huc.setRequestProperty("Subscription-Key", "98ca8bd853ca4621acd6bde0008bfea9");
 
             huc.connect();
+
             BufferedReader br = new BufferedReader(new InputStreamReader(huc.getInputStream()));
             StringBuilder sb = new StringBuilder();
 
@@ -53,16 +56,17 @@ public class JSONHandler  {
             br.close();
 
             JSONObject jsonObject = new JSONObject(sb.toString());
-            JSONArray results = (JSONArray) jsonObject.get("results");
-            JSONArray names = new JSONArray();
-            JSONArray skus = new JSONArray();
-            for (int i = 0; i < results.length(); i++) {
-                names.put(((JSONObject) results.get(i)).get("name"));
-                skus.put(((JSONObject) results.get(i)).get("sku"));
+            JSONArray jsonArray = (JSONArray) jsonObject.get("results");
+            results = new HashMap<>();
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject object = ((JSONObject) jsonArray.get(i));
+                results.put((String) object.get("name"), (Integer) object.get("sku"));
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return results;
     }
 
     public void locateProduct(int sku) throws IOException {
@@ -70,13 +74,23 @@ public class JSONHandler  {
         HttpURLConnection huc = (HttpURLConnection) url.openConnection();
         huc.setRequestProperty("Cache-Control", "no-cache");
         huc.setRequestProperty("Subscription-Key", "98ca8bd853ca4621acd6bde0008bfea9");
+
         huc.connect();
+
         BufferedReader br = new BufferedReader(new InputStreamReader(huc.getInputStream()));
         StringBuilder sb = new StringBuilder();
+
         String line;
-        while((line = br.readLine()) != null) {
+        while ((line = br.readLine()) != null) {
             sb.append(line);
         }
         br.close();
+
+        JSONObject product = new JSONObject(sb.toString());
+        JSONObject info = new JSONObject(product.get("locations"));
+        JSONObject aisleSide = new JSONObject(info.get("aisleSide"));
+        JSONObject aisle = new JSONObject(info.get("name"));
+        System.out.println(aisleSide + "\n" + aisle);
+
     }
 }
