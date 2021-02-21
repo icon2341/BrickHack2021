@@ -1,7 +1,3 @@
-import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.stage.Stage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -11,15 +7,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class JSONHandler extends Application {
-    @Override
-    public void start(Stage primaryStage) {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/resources/main.fxml"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+public class JSONHandler  {
 
     public JSONObject getJSONObject(int sku) {
         JSONObject jsonObject = null;
@@ -90,6 +78,5 @@ public class JSONHandler extends Application {
             sb.append(line);
         }
         br.close();
-        System.out.println(sb.toString());
     }
 }
